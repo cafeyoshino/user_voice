@@ -146,6 +146,7 @@
     text-decoration:none;
   }
   .btn-primary:active{ background:var(--pink-deep); }
+  .btn-primary:disabled{ opacity:.6; cursor:default; }
 
   textarea{
     width:100%;
@@ -344,13 +345,24 @@
   });
 
   document.getElementById("sendLowBtn").addEventListener("click", function(){
-    submitFeedback(document.getElementById("commentLow").value, "自社意見");
+    submitFeedback(this, document.getElementById("commentLow").value, "自社意見");
   });
   document.getElementById("sendDirectBtn").addEventListener("click", function(){
-    submitFeedback(document.getElementById("commentDirect").value, "自社意見");
+    submitFeedback(this, document.getElementById("commentDirect").value, "自社意見");
   });
 
-  function submitFeedback(comment, type){
+  var sending = false;
+
+  function submitFeedback(btn, comment, type){
+    // 二重送信防止：送信中は何度押しても無視する
+    if (sending) return;
+    sending = true;
+
+    var originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "送信中…";
+    document.getElementById("errMsg").classList.remove("active");
+
     var payload = {
       shop: store.name,
       rating: selectedRating,
@@ -363,8 +375,12 @@
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     }).then(function(){
-      showThanks();
+      showThanks();   // 成功時はそのまま完了画面へ（ボタンは戻さない）
     }).catch(function(){
+      // 失敗時だけボタンを戻して再送信できるようにする
+      sending = false;
+      btn.disabled = false;
+      btn.textContent = originalLabel;
       document.getElementById("errMsg").classList.add("active");
     });
   }
