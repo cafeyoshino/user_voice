@@ -1,1069 +1,406 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#c02a7d">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-title" content="本社カレンダー">
-  <link rel="manifest" href="manifest.webmanifest">
-  <title>カフェヨシノ 本社カレンダー</title>
-  <style>
-    :root {
-      --bg: #fff5f9;
-      --surface: #ffffff;
-      --line: #f0ccd9;
-      --text: #2b2026;
-      --muted: #7a6270;
-      --brand: #c02a7d;
-      --brand-dark: #8e1f5f;
-      --coffee: #7b4b2a;
-      --gold: #c9952d;
-      --blue: #3f6f9f;
-      --red: #bd5b4f;
-      --shadow: 0 10px 30px rgba(31, 45, 34, .08);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CAFE YOSHINO | ご意見・ご感想</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@500;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pink:#B72B82;
+    --pink-deep:#942269;
+    --pink-soft:#F7E9F1;
+    --cream:#FBF7F1;
+    --card:#FFFFFF;
+    --brown:#3A2A22;
+    --brown-soft:#7A695D;
+    --gold:#C79A3E;
+    --line:#EEDCE7;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--cream);
+    color:var(--brown);
+    font-family:"Noto Sans JP","Hiragino Sans",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
 
-    * { box-sizing: border-box; }
-    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); }
-    button, input, textarea { font: inherit; }
-    button { -webkit-tap-highlight-color: transparent; }
+  /* ==== ヘッダー（公式サイトのマストヘッド風） ==== */
+  header{
+    background:var(--card);
+    border-bottom:1px solid var(--line);
+    padding:18px 20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  header img{
+    height:46px;
+    width:auto;
+    display:block;
+  }
 
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      background: rgba(255, 246, 250, .95);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--line);
-    }
+  /* ==== ヒーロー ==== */
+  .hero{
+    background:var(--cream);
+    padding:40px 20px 34px;
+    text-align:center;
+  }
+  .hero h1{
+    font-family:"Noto Serif JP",serif;
+    font-weight:700;
+    font-size:23px;
+    line-height:1.7;
+    margin:0 0 10px;
+    color:var(--brown);
+  }
+  /* ==== 本文コンテナ ==== */
+  main{
+    max-width:460px;
+    margin:0 auto;
+    padding:0 20px 56px;
+  }
 
-    .topbar {
-      max-width: 1160px;
-      margin: 0 auto;
-      padding: 14px 16px 10px;
-      display: grid;
-      gap: 12px;
-    }
+  .module{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:6px;
+    box-shadow:0 10px 26px rgba(151,43,110,.07);
+    padding:32px 24px 28px;
+    margin-top:-22px;
+    position:relative;
+  }
 
-    .title-row, .date-row, .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
+  .stars{
+    display:flex;
+    justify-content:center;
+    gap:9px;
+    margin:0 0 10px;
+  }
+  .star-btn{
+    background:none;
+    border:none;
+    padding:4px;
+    cursor:pointer;
+    line-height:0;
+    -webkit-tap-highlight-color:transparent;
+  }
+  .star-btn svg{ width:38px; height:38px; transition:transform .15s ease; }
+  .star-btn:active svg{ transform:scale(.9); }
+  .star-btn path{ fill:none; stroke:var(--gold); stroke-width:1.6; }
+  .star-btn.filled path{ fill:var(--gold); }
 
-    .brand-lockup {
-      display: grid;
-      grid-template-columns: 58px minmax(0, 1fr);
-      align-items: center;
-      gap: 12px;
-    }
+  .hint{
+    text-align:center;
+    font-size:12px;
+    color:var(--brown-soft);
+    margin:0;
+  }
 
-    .brand-logo {
-      width: 58px;
-      height: 58px;
-      border-radius: 50%;
-      object-fit: contain;
-      background: #fff;
-      box-shadow: 0 5px 18px rgba(192, 42, 125, .16);
-    }
+  .panel{
+    display:none;
+    border-top:1px solid var(--line);
+    padding-top:26px;
+    margin-top:26px;
+    animation:rise .35s ease;
+  }
+  .panel.active{ display:block; }
+  @keyframes rise{
+    from{ opacity:0; transform:translateY(6px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
 
-    h1 { margin: 0; font-size: 19px; line-height: 1.25; font-weight: 850; }
-    .sub, .sync-state { color: var(--muted); font-size: 12px; line-height: 1.4; }
-    .sub { margin-top: 3px; }
+  .panel-eyebrow{
+    font-size:10px;
+    letter-spacing:.18em;
+    color:var(--pink);
+    font-weight:700;
+    text-align:center;
+    margin:0 0 10px;
+  }
+  .lead{
+    font-size:15px;
+    line-height:1.9;
+    text-align:center;
+    margin:0 0 22px;
+    color:var(--brown);
+  }
 
-    .icon-button, .text-button, .add-button {
-      border: 1px solid var(--line);
-      background: var(--surface);
-      color: var(--text);
-      min-height: 40px;
-      border-radius: 8px;
-      display: inline-grid;
-      place-items: center;
-      box-shadow: 0 4px 14px rgba(24, 35, 26, .05);
-      cursor: pointer;
-      font-weight: 750;
-    }
+  .btn-primary{
+    display:block;
+    width:100%;
+    padding:15px 18px;
+    background:var(--pink);
+    color:#fff;
+    border:none;
+    border-radius:4px;
+    font-family:"Noto Sans JP",sans-serif;
+    font-size:15px;
+    font-weight:500;
+    letter-spacing:.02em;
+    cursor:pointer;
+    text-align:center;
+    text-decoration:none;
+  }
+  .btn-primary:active{ background:var(--pink-deep); }
+  .btn-primary:disabled{ opacity:.6; cursor:default; }
 
-    .icon-button { width: 40px; font-size: 24px; line-height: 1; }
-    .text-button, .add-button { padding: 0 13px; white-space: nowrap; }
-    .add-button { border-color: var(--brand); background: var(--brand); color: #fff; text-decoration: none; }
+  textarea{
+    width:100%;
+    min-height:110px;
+    padding:13px 14px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:var(--cream);
+    font-family:"Noto Sans JP",sans-serif;
+    font-size:14px;
+    color:var(--brown);
+    resize:vertical;
+    margin:0 0 16px;
+  }
+  textarea:focus{ outline:none; border-color:var(--pink); }
 
-    .date-nav { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
-    .period { font-weight: 800; font-size: 17px; min-width: 145px; }
+  .secondary-link{
+    display:block;
+    text-align:center;
+    margin-top:18px;
+    font-size:13px;
+    color:var(--brown-soft);
+    text-decoration:underline;
+    text-underline-offset:3px;
+    background:none;
+    border:none;
+    width:100%;
+    cursor:pointer;
+    font-family:"Noto Sans JP",sans-serif;
+  }
 
-    .view-tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      border: 1px solid var(--line);
-      background: #f8e8ef;
-      padding: 3px;
-      border-radius: 8px;
-      gap: 3px;
-    }
+  .thanks{ display:none; text-align:center; padding-top:6px; }
+  .thanks.active{ display:block; }
+  .thanks .mark{
+    width:46px; height:46px;
+    margin:0 auto 18px;
+    border-radius:50%;
+    border:1.6px solid var(--pink);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .thanks p{ font-size:15px; line-height:1.9; color:var(--brown); }
 
-    .tab {
-      border: 0;
-      background: transparent;
-      border-radius: 6px;
-      min-height: 36px;
-      font-weight: 750;
-      color: var(--muted);
-      cursor: pointer;
-    }
+  .err{
+    display:none;
+    text-align:center;
+    font-size:12px;
+    color:var(--pink-deep);
+    margin-top:14px;
+  }
+  .err.active{ display:block; }
 
-    .tab.active {
-      background: var(--surface);
-      color: var(--brand-dark);
-      box-shadow: 0 2px 8px rgba(21, 38, 28, .08);
-    }
-
-    .filters {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding-bottom: 2px;
-      scrollbar-width: none;
-    }
-    .filters::-webkit-scrollbar { display: none; }
-
-    .chip {
-      flex: 0 0 auto;
-      border: 1px solid var(--line);
-      background: var(--surface);
-      border-radius: 999px;
-      min-height: 34px;
-      padding: 0 12px;
-      color: var(--muted);
-      font-weight: 750;
-      cursor: pointer;
-    }
-
-    .chip.active { background: #fde8f2; border-color: #e8a8c5; color: var(--brand-dark); }
-
-    main { width: 100%; max-width: 1160px; margin: 0 auto; padding: 14px 16px 92px; }
-
-    .panel {
-      background: var(--surface);
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .empty { color: var(--muted); padding: 22px; text-align: center; font-weight: 700; }
-    .hidden { display: none; }
-    .admin-only { display: none !important; }
-    body.admin-mode .admin-only { display: inline-grid !important; }
-
-    .loading-overlay {
-      position: fixed;
-      inset: 0;
-      z-index: 30;
-      display: none;
-      place-items: center;
-      padding: 24px;
-      background: rgba(255, 245, 249, .68);
-      backdrop-filter: blur(3px);
-    }
-
-    body.app-loading .loading-overlay { display: grid; }
-
-    body.app-loading main { opacity: .42; }
-
-    .loading-card {
-      width: min(360px, 92vw);
-      background: var(--surface);
-      border: 1px solid #e8a8c5;
-      border-radius: 14px;
-      box-shadow: 0 18px 42px rgba(80, 35, 58, .16);
-      padding: 24px 22px;
-      text-align: center;
-    }
-
-    .loading-spinner {
-      width: 38px;
-      height: 38px;
-      margin: 0 auto 14px;
-      border: 4px solid #f8d7e6;
-      border-top-color: var(--brand);
-      border-radius: 999px;
-      animation: spin .9s linear infinite;
-    }
-
-    .loading-title {
-      margin: 0;
-      color: var(--brand-dark);
-      font-size: 18px;
-      font-weight: 850;
-    }
-
-    .loading-copy {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .day-layout { display: grid; grid-template-columns: 86px 1fr; }
-    .hours { background: #fffafd; border-right: 1px solid var(--line); }
-    .hour, .slot { min-height: 64px; border-bottom: 1px solid #edf0e8; }
-    .hour { color: var(--muted); font-size: 12px; padding: 8px; text-align: right; }
-    .timeline { position: relative; min-height: 896px; padding: 0 8px; box-sizing: border-box; }
-
-    .all-day-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 10px;
-      border-bottom: 1px solid var(--line);
-      background: #fffafd;
-    }
-    .all-day-row .event { flex: 1 1 220px; max-width: 320px; }
-
-    .event {
-      display: grid;
-      gap: 4px;
-      border-left: 5px solid var(--brand);
-      background: #f3f8f4;
-      border-radius: 8px;
-      padding: 8px 9px;
-      box-shadow: 0 6px 16px rgba(28, 39, 29, .08);
-      min-width: 0;
-    }
-
-    .timeline .event, .week-grid-col .event { position: absolute; left: 0; right: 0; }
-
-    .event .who {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 12px;
-      color: var(--muted);
-      font-weight: 800;
-      min-width: 0;
-    }
-
-    .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--brand); flex: 0 0 auto; }
-    .event strong { font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
-    .event small { color: var(--muted); font-weight: 650; overflow-wrap: anywhere; }
-
-    .president { border-color: var(--brand); background: #fdeaf3; }
-    .senmu { border-color: var(--coffee); background: #fbf4ee; }
-    .tamaki { border-color: var(--blue); background: #eef5fb; }
-    .shinohata { border-color: var(--gold); background: #fff8e8; }
-    .nakata { border-color: var(--red); background: #fff1ef; }
-    .yano { border-color: #5960a7; background: #f1f2ff; }
-    .imanishi { border-color: #5e7d36; background: #f1f7e9; }
-    .unknown { border-color: #879083; background: #f4f6f2; }
-
-    .president .dot { background: var(--brand); }
-    .senmu .dot { background: var(--coffee); }
-    .tamaki .dot { background: var(--blue); }
-    .shinohata .dot { background: var(--gold); }
-    .nakata .dot { background: var(--red); }
-    .yano .dot { background: #5960a7; }
-    .imanishi .dot { background: #5e7d36; }
-    .unknown .dot { background: #879083; }
-
-    .week-list-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .week-list-grid { min-width: 700px; }
-    .week-list-header { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); border-bottom: 1px solid var(--line); }
-    .week-grid-daylabel {
-      text-align: center;
-      padding: 8px 4px;
-      border-right: 1px solid var(--line);
-      color: var(--muted);
-      font-weight: 750;
-      font-size: 12px;
-    }
-    .week-grid-daylabel:last-child { border-right: 0; }
-    .week-grid-daylabel .dnum { display: block; font-size: 18px; font-weight: 850; color: var(--text); line-height: 1.3; }
-    .week-grid-daylabel.today { background: #fff1f7; }
-    .week-grid-daylabel.today .dnum { color: var(--brand-dark); }
-    .week-grid-daylabel { cursor: pointer; }
-    .week-grid-daylabel:hover { background: #fdeaf3; }
-
-    .week-list-body { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); align-items: start; }
-    .week-list-col {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      padding: 8px 6px;
-      border-right: 1px solid var(--line);
-      min-height: 60px;
-      min-width: 0;
-    }
-    .week-list-col:last-child { border-right: 0; }
-    .week-list-empty { color: var(--muted); font-size: 11px; text-align: center; padding: 6px 0; }
-
-    .week-list-item {
-      border-left: 4px solid var(--brand);
-      background: #f3f8f4;
-      border-radius: 6px;
-      padding: 4px 6px;
-      min-width: 0;
-    }
-    .week-list-time { font-size: 10px; font-weight: 800; color: var(--muted); line-height: 1.3; }
-    .week-list-main { display: flex; gap: 4px; align-items: baseline; font-size: 11px; line-height: 1.35; overflow: hidden; }
-    .week-list-name { font-weight: 800; flex: 0 0 auto; white-space: nowrap; color: var(--text); }
-    .week-list-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); flex: 1 1 auto; min-width: 0; }
-
-    .month-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
-    .weekday {
-      min-height: 34px;
-      display: grid;
-      place-items: center;
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 800;
-      background: #fffafd;
-      border-right: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-    }
-    .weekday:last-child { border-right: 0; }
-
-    .date-cell {
-      min-height: 112px;
-      padding: 7px;
-      border-right: 1px solid var(--line);
-      border-bottom: 1px solid var(--line);
-      background: #fff;
-      display: grid;
-      align-content: start;
-      gap: 5px;
-      cursor: pointer;
-      min-width: 0;
-    }
-    .date-cell:nth-child(7n) { border-right: 0; }
-    .date-cell.today { background: #fff1f7; box-shadow: inset 0 0 0 2px #e8a8c5; }
-    .date-cell.outside { background: #fffafd; opacity: .74; }
-    .date-num { font-size: 12px; font-weight: 800; color: var(--muted); }
-    .mini-event {
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      border-radius: 5px;
-      padding: 4px 6px;
-      font-size: 11px;
-      font-weight: 750;
-      color: #3a2430;
-      border-left: 4px solid var(--brand);
-    }
-
-    .mini-event.president { border-color: var(--brand); background: #fdeaf3; }
-    .mini-event.senmu { border-color: var(--coffee); background: #fbf4ee; }
-    .mini-event.tamaki { border-color: var(--blue); background: #eef5fb; }
-    .mini-event.shinohata { border-color: var(--gold); background: #fff8e8; }
-    .mini-event.nakata { border-color: var(--red); background: #fff1ef; }
-    .mini-event.yano { border-color: #5960a7; background: #f1f2ff; }
-    .mini-event.imanishi { border-color: #5e7d36; background: #f1f7e9; }
-    .mini-event.unknown { border-color: #879083; background: #f4f6f2; }
-    .more { color: var(--brand-dark); font-size: 11px; font-weight: 800; }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 22, 17, .34);
-      display: none;
-      align-items: end;
-      z-index: 20;
-    }
-    .modal-backdrop.open { display: flex; }
-    .modal {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-      background: var(--surface);
-      border-radius: 8px 8px 0 0;
-      box-shadow: 0 -18px 50px rgba(0, 0, 0, .20);
-      padding: 16px;
-      max-height: 88vh;
-      overflow-y: auto;
-    }
-    .modal h2 { margin: 0 0 14px; font-size: 18px; }
-    .form-grid { display: grid; gap: 10px; }
-    label { display: grid; gap: 6px; color: var(--muted); font-size: 12px; font-weight: 800; }
-    input, textarea { width: 100%; border: 1px solid var(--line); border-radius: 8px; min-height: 42px; padding: 9px 10px; color: var(--text); background: #fff; }
-    textarea { resize: vertical; min-height: 110px; }
-    .modal-actions { display: flex; justify-content: end; gap: 10px; margin-top: 14px; }
-    .secondary, .primary { min-height: 42px; border-radius: 8px; padding: 0 14px; font-weight: 800; cursor: pointer; }
-    .secondary { border: 1px solid var(--line); background: #fff; color: var(--text); }
-    .primary { border: 1px solid var(--brand); background: var(--brand); color: #fff; }
-    .notice { margin: 0 0 12px; padding: 10px 12px; background: #fff1f7; border: 1px solid #f0ccd9; border-radius: 8px; color: var(--brand-dark); font-size: 13px; line-height: 1.5; }
-
-    @media (min-width: 780px) {
-      .topbar { grid-template-columns: 1fr auto; align-items: center; }
-      .title-row { grid-column: 1 / -1; }
-      .date-row { justify-content: start; }
-      .view-tabs { width: 310px; }
-      main { padding-top: 22px; }
-      .modal-backdrop { align-items: center; }
-      .modal { border-radius: 8px; }
-    }
-
-    @media (max-width: 640px) {
-      .status-row { align-items: stretch; }
-      .status-row .text-button { min-width: 72px; }
-      .period { min-width: 0; flex: 1; text-align: center; font-size: 15px; }
-      .day-layout { grid-template-columns: 58px 1fr; }
-      .hour { padding: 8px 5px; }
-      .week-list-grid { min-width: 560px; }
-      .week-list-col { padding: 6px 4px; }
-      .date-cell { min-height: 78px; padding: 4px; }
-      .mini-event { padding: 3px 4px; font-size: 10px; }
-      .sync-state { flex: 1; }
-    }
-  </style>
+  footer{
+    text-align:center;
+    padding:26px 20px 40px;
+    font-size:11px;
+    color:var(--brown-soft);
+    letter-spacing:.02em;
+  }
+  footer a{ color:var(--brown-soft); }
+</style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div class="topbar">
-        <div class="title-row">
-          <div class="brand-lockup">
-            <img class="brand-logo" src="cafe-yoshino-logo-small.jpg" alt="カフェヨシノ">
-            <div>
-              <h1>カフェヨシノ 本社カレンダー</h1>
-              <div class="sub">共有Googleカレンダーを、担当者名つきで自動表示</div>
-            </div>
-          </div>
-          <a class="add-button" id="googleCalendarLink" href="https://calendar.google.com/" target="_blank" rel="noopener">＋ 予定追加</a>
-        </div>
 
-        <div class="date-row">
-          <div class="date-nav" aria-label="日付移動">
-            <button class="icon-button" type="button" id="prevButton" aria-label="前へ">‹</button>
-            <div class="period" id="periodLabel"></div>
-            <button class="icon-button" type="button" id="nextButton" aria-label="次へ">›</button>
-          </div>
-          <button class="text-button" type="button" id="todayButton">今日</button>
-        </div>
+<header>
+  <img src="logo.jpg" alt="CAFE YOSHINO">
+</header>
 
-        <div class="view-tabs" role="tablist" aria-label="表示切替">
-          <button class="tab active" type="button" data-view="day">日</button>
-          <button class="tab" type="button" data-view="week">週</button>
-          <button class="tab" type="button" data-view="month">月</button>
-        </div>
+<div class="hero">
+  <h1 id="headline">本日はご来店<br>ありがとうございます</h1>
+</div>
 
-        <div class="filters" id="memberFilters" aria-label="メンバー絞り込み"></div>
+<main>
+  <div class="module">
 
-        <div class="status-row">
-          <div class="sync-state" id="syncState">予定を読み込み中...</div>
-          <button class="text-button admin-only" type="button" id="configButton">設定</button>
-          <button class="text-button admin-only" type="button" id="refreshButton">更新</button>
-        </div>
+    <div id="rateStep">
+      <div class="stars" id="stars">
+        <button class="star-btn" data-v="1" aria-label="星1"><svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 6.2 6.7.7-5 4.7 1.4 6.8L12 17.6 6 21l1.4-6.8-5-4.7 6.7-.7z"/></svg></button>
+        <button class="star-btn" data-v="2" aria-label="星2"><svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 6.2 6.7.7-5 4.7 1.4 6.8L12 17.6 6 21l1.4-6.8-5-4.7 6.7-.7z"/></svg></button>
+        <button class="star-btn" data-v="3" aria-label="星3"><svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 6.2 6.7.7-5 4.7 1.4 6.8L12 17.6 6 21l1.4-6.8-5-4.7 6.7-.7z"/></svg></button>
+        <button class="star-btn" data-v="4" aria-label="星4"><svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 6.2 6.7.7-5 4.7 1.4 6.8L12 17.6 6 21l1.4-6.8-5-4.7 6.7-.7z"/></svg></button>
+        <button class="star-btn" data-v="5" aria-label="星5"><svg viewBox="0 0 24 24"><path d="M12 2.6l2.9 6.2 6.7.7-5 4.7 1.4 6.8L12 17.6 6 21l1.4-6.8-5-4.7 6.7-.7z"/></svg></button>
       </div>
-    </header>
-
-    <main>
-      <section class="panel" id="dayView" aria-label="日表示"></section>
-      <section class="panel hidden" id="weekView" aria-label="週表示"></section>
-      <section class="panel hidden" id="monthView" aria-label="月表示"></section>
-    </main>
-  </div>
-
-  <div class="loading-overlay" id="loadingOverlay" role="status" aria-live="polite" aria-label="予定データ更新中">
-    <div class="loading-card">
-      <div class="loading-spinner" aria-hidden="true"></div>
-      <p class="loading-title">データ更新中</p>
-      <p class="loading-copy">Googleカレンダーから最新の予定を読み込んでいます。</p>
+      <p class="hint">星をタップして評価してください</p>
     </div>
-  </div>
 
-  <div class="modal-backdrop" id="configModal" role="dialog" aria-modal="true" aria-labelledby="configTitle">
-    <div class="modal">
-      <h2 id="configTitle">アプリ設定</h2>
-      <p class="notice">通常は管理者だけが設定します。利用者はURLを開くだけで予定を見られます。</p>
-      <div class="form-grid">
-        <label>
-          Apps Script URL
-          <input id="scriptUrlInput" type="url" placeholder="https://script.google.com/macros/s/.../exec">
-        </label>
-        <label>
-          メールと名前の対応表
-          <textarea id="memberMapInput" placeholder="imanishi0305@gmail.com=今西"></textarea>
-        </label>
-      </div>
-      <div class="modal-actions">
-        <button class="secondary" type="button" data-close-modal>閉じる</button>
-        <button class="primary" type="button" id="saveConfigButton">設定を保存</button>
-      </div>
+    <!-- 高評価（★4〜5）：Google口コミを優先表示 -->
+    <div class="panel" id="panelHigh">
+      <p class="panel-eyebrow">THANK YOU</p>
+      <p class="lead">うれしいお言葉、励みになります。<br>よろしければ、Googleに口コミを<br>投稿していただけますか。</p>
+      <a class="btn-primary" id="googleBtn" href="#" target="_blank" rel="noopener">Google口コミを書く</a>
+      <button class="secondary-link" data-action="direct">お店に直接意見を送る</button>
     </div>
-  </div>
 
-  <script src="app-config.js"></script>
-  <script>
-    window.CAFE_YOSHINO_CONFIG = window.CAFE_YOSHINO_CONFIG || {
-      scriptUrl: 'https://script.google.com/macros/s/AKfycbzZuaGYg4wmGyKO0_KGGHc12rjlvUdv4uOxN2Lv7JEMwWeTz8zff7dgCHItnsAcX4_I/exec',
-      googleCalendarUrl: 'https://calendar.google.com/',
-      memberMap: [
-        'mner4k861@gmail.com=社長',
-        'mie.y.0831@gmail.com=専務',
-        'tamaki19740902@gmail.com=玉木',
-        'shinohata.tenpo.pc@gmail.com=篠畑',
-        'nakata.cy@gmail.com=中田',
-        'yano.cy2@gmail.com=矢野',
-        'imanishi0305@gmail.com=今西'
-      ].join('\n')
+    <!-- 低評価（★1〜3）：自社フィードバックを優先表示 -->
+    <div class="panel" id="panelLow">
+      <p class="panel-eyebrow">YOUR VOICE</p>
+      <p class="lead">評価ありがとうございます。<br>よろしければ、もう少し詳しくお聞かせください。<br>今後の改善に活かしてまいります。</p>
+      <textarea id="commentLow" placeholder="気になった点をお聞かせください（任意）"></textarea>
+      <button class="btn-primary" id="sendLowBtn">お店に意見を送る</button>
+      <button class="secondary-link" data-action="google">Google口コミに投稿する</button>
+    </div>
+
+    <!-- 自社への直接意見フォーム（高評価から遷移した場合） -->
+    <div class="panel" id="panelDirect">
+      <p class="panel-eyebrow">YOUR VOICE</p>
+      <p class="lead">お店へのご意見をお聞かせください。</p>
+      <textarea id="commentDirect" placeholder="ご意見・ご感想（任意）"></textarea>
+      <button class="btn-primary" id="sendDirectBtn">送信する</button>
+    </div>
+
+    <div class="thanks" id="thanks">
+      <div class="mark">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M4 12l5 5L20 6" fill="none" stroke="#B72B82" stroke-width="2"/></svg>
+      </div>
+      <p>ご回答ありがとうございました。</p>
+    </div>
+
+    <p class="err" id="errMsg">送信に失敗しました。時間をおいて再度お試しください。</p>
+  </div>
+</main>
+
+<footer>
+  CAFE YOSHINO ｜ 株式会社カフェヨシノ
+</footer>
+
+<script>
+/* ============================================================
+   店舗設定
+   ?shop=jimokuji のように URL パラメータで店舗を切り替える。
+   今後、大高店・太田川店などを追加する場合はここに追記する。
+   ============================================================ */
+  var STORES = {
+    jimokuji: {
+      name: "甚目寺店",
+      googleReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJbTPBgs6fA2ARqKUTtQICrWg"
+    },
+    toyotamaeyama: {
+      name: "豊田前山店",
+      googleReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJA8B-s5mhBGARmh9Ha9sQITA"
+    },
+    miyoshi: {
+      name: "みよし店",
+      googleReviewUrl: "https://search.google.com/local/writereview?placeid=ChIJrWMSvc1hA2ARWZprMocOpx8"
+    }
+    // 今後追加する場合は同じ形式で追記（キーは英小文字、QRの ?shop= と一致させる）
+  };
+  var DEFAULT_SHOP = "jimokuji";
+
+  var ENDPOINT_URL = "https://script.google.com/macros/s/AKfycbyGBfX4HutGbuhXz9kzGFGNDTpFv510WvSCKUWaT-6ZKBTvJAH9i2sJH9egLviH9a0C/exec";
+
+  var params = new URLSearchParams(location.search);
+  var shopKey = params.get("shop") || DEFAULT_SHOP;
+  var store = STORES[shopKey] || STORES[DEFAULT_SHOP];
+
+  document.getElementById("googleBtn").href = store.googleReviewUrl;
+
+  var selectedRating = 0;
+  var stars = Array.prototype.slice.call(document.querySelectorAll(".star-btn"));
+
+  stars.forEach(function(btn){
+    btn.addEventListener("click", function(){
+      selectedRating = parseInt(btn.getAttribute("data-v"), 10);
+      paintStars(selectedRating);
+      showRatingPanel(selectedRating);
+    });
+  });
+
+  function paintStars(v){
+    stars.forEach(function(b){
+      var val = parseInt(b.getAttribute("data-v"), 10);
+      b.classList.toggle("filled", val <= v);
+    });
+  }
+
+  function showRatingPanel(v){
+    document.getElementById("panelHigh").classList.remove("active");
+    document.getElementById("panelLow").classList.remove("active");
+    document.getElementById("panelDirect").classList.remove("active");
+    if (v >= 4) {
+      document.getElementById("panelHigh").classList.add("active");
+    } else {
+      document.getElementById("panelLow").classList.add("active");
+    }
+  }
+
+  document.querySelectorAll('[data-action="direct"]').forEach(function(el){
+    el.addEventListener("click", function(){
+      document.getElementById("panelHigh").classList.remove("active");
+      document.getElementById("panelDirect").classList.add("active");
+    });
+  });
+  document.querySelectorAll('[data-action="google"]').forEach(function(el){
+    el.addEventListener("click", function(){
+      window.open(store.googleReviewUrl, "_blank", "noopener");
+    });
+  });
+
+  document.getElementById("sendLowBtn").addEventListener("click", function(){
+    submitFeedback(this, document.getElementById("commentLow").value, "自社意見");
+  });
+  document.getElementById("sendDirectBtn").addEventListener("click", function(){
+    submitFeedback(this, document.getElementById("commentDirect").value, "自社意見");
+  });
+
+  var sending = false;
+
+  function submitFeedback(btn, comment, type){
+    // 二重送信防止：送信中は何度押しても無視する
+    if (sending) return;
+    sending = true;
+
+    var originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "送信中…";
+    document.getElementById("errMsg").classList.remove("active");
+
+    var payload = {
+      shop: store.name,
+      rating: selectedRating,
+      comment: comment || "",
+      type: type
     };
 
-    const MEMBERS = [
-      { name: '社長', key: 'president' },
-      { name: '専務', key: 'senmu' },
-      { name: '玉木', key: 'tamaki' },
-      { name: '篠畑', key: 'shinohata' },
-      { name: '中田', key: 'nakata' },
-      { name: '矢野', key: 'yano' },
-      { name: '今西', key: 'imanishi' }
-    ];
+    fetch(ENDPOINT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    }).then(function(){
+      showThanks();   // 成功時はそのまま完了画面へ（ボタンは戻さない）
+    }).catch(function(){
+      // 失敗時だけボタンを戻して再送信できるようにする
+      sending = false;
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+      document.getElementById("errMsg").classList.add("active");
+    });
+  }
 
-    const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'];
-    const DAY_HOUR_START = 9;
-    const DAY_HOUR_COUNT = 14;
-    const CONFIG_KEY = 'cafeYoshinoCalendarConfigV2';
-    const AUTO_REFRESH_INTERVAL_MS = 3 * 60 * 1000;
-    const APP_TODAY = startOfDay(new Date());
-    const FILE_CONFIG = window.CAFE_YOSHINO_CONFIG || {};
-    const DEFAULT_MEMBER_MAP = FILE_CONFIG.memberMap || '';
-    const IS_ADMIN = new URLSearchParams(location.search).get('admin') === '1';
+  function showThanks(){
+    document.getElementById("rateStep").style.display = "none";
+    ["panelHigh","panelLow","panelDirect"].forEach(function(id){
+      document.getElementById(id).classList.remove("active");
+    });
+    document.getElementById("thanks").classList.add("active");
+  }
 
-    const state = {
-      view: 'day',
-      cursor: APP_TODAY,
-      selectedMember: '全員',
-      events: [],
-      config: loadConfig(),
-      loading: false,
-      firstLoadDone: false
-    };
-
-    const demoEvents = [
-      makeLocalEvent('demo-1', toDateInput(APP_TODAY), '09:00', '10:00', '社長', '取引先打ち合わせ', '本社 会議室'),
-      makeLocalEvent('demo-2', toDateInput(APP_TODAY), '10:30', '12:00', '玉木', '店舗訪問', '名駅店・栄店'),
-      makeLocalEvent('demo-3', toDateInput(APP_TODAY), '13:00', '14:00', '篠畑', '面接', 'オンライン'),
-      makeLocalEvent('demo-4', toDateInput(APP_TODAY), '15:00', '16:30', '中田', '業者対応', '厨房機器 見積確認')
-    ];
-
-    const dayView = document.getElementById('dayView');
-    const weekView = document.getElementById('weekView');
-    const monthView = document.getElementById('monthView');
-    const periodLabel = document.getElementById('periodLabel');
-    const syncState = document.getElementById('syncState');
-
-    initialize();
-
-    function initialize() {
-      state.events = state.config.scriptUrl ? [] : [...demoEvents];
-      document.getElementById('googleCalendarLink').href = state.config.googleCalendarUrl || 'https://calendar.google.com/';
-      document.body.classList.toggle('admin-mode', IS_ADMIN);
-      setAppLoading(Boolean(state.config.scriptUrl));
-      renderFilters();
-      bindActions();
-      applyConfigToForm();
-      registerAppShell();
-      render();
-      refreshEvents({ silent: false });
-      startAutoRefresh();
-    }
-
-    function bindActions() {
-      document.querySelectorAll('.tab').forEach((tab) => {
-        tab.addEventListener('click', () => {
-          state.view = tab.dataset.view;
-          document.querySelectorAll('.tab').forEach((item) => item.classList.toggle('active', item === tab));
-          render();
-          refreshEvents({ silent: true });
-        });
-      });
-
-      document.getElementById('prevButton').addEventListener('click', () => {
-        moveCursor(-1);
-        refreshEvents({ silent: true });
-      });
-      document.getElementById('nextButton').addEventListener('click', () => {
-        moveCursor(1);
-        refreshEvents({ silent: true });
-      });
-      document.getElementById('todayButton').addEventListener('click', () => {
-        state.cursor = startOfDay(new Date());
-        render();
-        refreshEvents({ silent: true });
-      });
-      document.getElementById('refreshButton').addEventListener('click', () => refreshEvents({ silent: false }));
-      document.getElementById('configButton').addEventListener('click', () => openModal('configModal'));
-      document.getElementById('saveConfigButton').addEventListener('click', saveConfig);
-
-      document.querySelectorAll('[data-close-modal]').forEach((button) => {
-        button.addEventListener('click', () => closeModals());
-      });
-      document.querySelectorAll('.modal-backdrop').forEach((backdrop) => {
-        backdrop.addEventListener('click', (event) => {
-          if (event.target === backdrop) closeModals();
-        });
-      });
-    }
-
-    function registerAppShell() {
-      if ('serviceWorker' in navigator) navigator.serviceWorker.register('service-worker.js').catch(() => {});
-    }
-
-    function startAutoRefresh() {
-      window.setInterval(() => {
-        if (!document.hidden) refreshEvents({ silent: true });
-      }, AUTO_REFRESH_INTERVAL_MS);
-
-      document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) refreshEvents({ silent: true });
-      });
-    }
-
-    async function refreshEvents(options = {}) {
-      if (!state.config.scriptUrl) {
-        setAppLoading(false);
-        setSyncText('Apps Script URL未設定。設定後は自動更新されます。');
-        return;
-      }
-      if (state.loading) return;
-      state.loading = true;
-      const showLoadingWindow = !state.firstLoadDone && !options.silent;
-
-      try {
-        if (showLoadingWindow) setAppLoading(true);
-        if (!options.silent) setSyncText('予定を読み込み中...');
-        const { start, end } = visibleRange();
-        const data = await loadScriptData(state.config.scriptUrl, {
-          start: start.toISOString(),
-          end: end.toISOString(),
-          t: String(Date.now())
-        });
-        const items = Array.isArray(data.events) ? data.events : [];
-        state.events = items.map(fromScriptEvent).filter(Boolean);
-        render();
-        setSyncText(`${new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })} に自動更新しました。`);
-      } catch (error) {
-        setSyncText('予定を読み込めませんでした。Apps Scriptの公開設定を確認してください。');
-      } finally {
-        state.loading = false;
-        state.firstLoadDone = true;
-        setAppLoading(false);
-      }
-    }
-
-    function setAppLoading(isLoading) {
-      document.body.classList.toggle('app-loading', isLoading);
-    }
-
-    function loadScriptData(scriptUrl, params) {
-      return new Promise((resolve, reject) => {
-        const callbackName = `cafeYoshinoCallback_${Date.now()}_${Math.random().toString(36).slice(2)}`;
-        const script = document.createElement('script');
-        const url = new URL(scriptUrl);
-        Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
-        url.searchParams.set('callback', callbackName);
-
-        const timer = window.setTimeout(() => {
-          cleanup();
-          reject(new Error('timeout'));
-        }, 15000);
-
-        function cleanup() {
-          window.clearTimeout(timer);
-          delete window[callbackName];
-          script.remove();
-        }
-
-        window[callbackName] = (data) => {
-          cleanup();
-          resolve(data || {});
-        };
-
-        script.onerror = () => {
-          cleanup();
-          reject(new Error('script load failed'));
-        };
-        script.src = url.toString();
-        document.body.appendChild(script);
-      });
-    }
-
-    function fromScriptEvent(item) {
-      const start = new Date(item.start);
-      const end = new Date(item.end);
-      if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) return null;
-      const assignee = item.assignee || assigneeFromEmail(item.creatorEmail) || assigneeFromEmail(item.organizerEmail) || '未設定';
-      return {
-        id: item.id || `${item.title}-${item.start}`,
-        assignee,
-        title: item.title || '予定',
-        start,
-        end,
-        location: item.location || '',
-        allDay: Boolean(item.allDay)
-      };
-    }
-
-    function renderFilters() {
-      const filterRoot = document.getElementById('memberFilters');
-      filterRoot.innerHTML = ['全員', ...MEMBERS.map((member) => member.name)]
-        .map((name) => `<button class="chip${name === state.selectedMember ? ' active' : ''}" type="button" data-member="${escapeHtml(name)}">${escapeHtml(name)}</button>`)
-        .join('');
-      filterRoot.querySelectorAll('.chip').forEach((chip) => {
-        chip.addEventListener('click', () => {
-          state.selectedMember = chip.dataset.member;
-          renderFilters();
-          render();
-        });
-      });
-    }
-
-    function render() {
-      periodLabel.textContent = periodText();
-      dayView.classList.toggle('hidden', state.view !== 'day');
-      weekView.classList.toggle('hidden', state.view !== 'week');
-      monthView.classList.toggle('hidden', state.view !== 'month');
-      renderDay();
-      renderWeek();
-      renderMonth();
-    }
-
-    function renderDay() {
-      const dayEvents = filteredEvents().filter((event) => isSameDate(event.start, state.cursor));
-      const allDayEvents = dayEvents.filter((event) => event.allDay).sort(sortByStart);
-      const timedEvents = dayEvents.filter((event) => !event.allDay).sort(sortByStart);
-      const hours = Array.from({ length: DAY_HOUR_COUNT }, (_, index) => DAY_HOUR_START + index);
-      const layout = layoutOverlaps(timedEvents);
-      dayView.innerHTML = `
-        ${allDayEvents.length ? `<div class="all-day-row">${allDayEvents.map((event) => listEventHtml(event)).join('')}</div>` : ''}
-        <div class="day-layout">
-          <div class="hours">${hours.map((hour) => `<div class="hour">${hour}:00</div>`).join('')}</div>
-          <div class="timeline">
-            ${hours.map(() => '<div class="slot"></div>').join('')}
-            ${layout.map((entry) => positionedEventHtml(entry, DAY_HOUR_START)).join('')}
-            ${dayEvents.length ? '' : '<div class="empty">この日の予定はありません</div>'}
-          </div>
-        </div>
-      `;
-    }
-
-    function renderWeek() {
-      const start = weekStart(state.cursor);
-      const days = Array.from({ length: 7 }, (_, index) => addDays(start, index));
-
-      const perDay = days.map((day) => {
-        const dayEvents = filteredEvents().filter((event) => isSameDate(event.start, day)).sort(sortByStart);
-        return { day, dayEvents };
-      });
-
-      weekView.innerHTML = `
-        <div class="week-list-scroll">
-          <div class="week-list-grid">
-            <div class="week-list-header">
-              ${perDay.map(({ day }) => `
-                <div class="week-grid-daylabel${isToday(day) ? ' today' : ''}" data-date="${toDateInput(day)}" role="button" tabindex="0">
-                  <span class="wd">${WEEKDAYS[day.getDay()]}</span>
-                  <span class="dnum">${day.getDate()}</span>
-                </div>
-              `).join('')}
-            </div>
-            <div class="week-list-body">
-              ${perDay.map(({ dayEvents }) => `
-                <div class="week-list-col">
-                  ${dayEvents.length ? dayEvents.map((event) => weekListItemHtml(event)).join('') : '<div class="week-list-empty">-</div>'}
-                </div>
-              `).join('')}
-            </div>
-          </div>
-        </div>
-      `;
-
-      weekView.querySelectorAll('.week-grid-daylabel').forEach((label) => {
-        label.addEventListener('click', () => {
-          state.cursor = parseDate(label.dataset.date);
-          state.view = 'day';
-          document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.view === 'day'));
-          render();
-          refreshEvents({ silent: true });
-        });
-      });
-    }
-
-    function layoutOverlaps(events) {
-      const sorted = [...events].sort((a, b) => a.start - b.start || a.end - b.end);
-      const results = [];
-      let cluster = [];
-      let clusterEnd = null;
-
-      function flushCluster() {
-        if (!cluster.length) return;
-        const colEnds = [];
-        const clusterResults = [];
-        cluster.forEach((event) => {
-          let col = colEnds.findIndex((end) => end <= event.start);
-          if (col === -1) {
-            col = colEnds.length;
-            colEnds.push(event.end);
-          } else {
-            colEnds[col] = event.end;
-          }
-          clusterResults.push({ event, col, cols: 0 });
-        });
-        const totalCols = colEnds.length;
-        clusterResults.forEach((entry) => { entry.cols = totalCols; });
-        results.push(...clusterResults);
-        cluster = [];
-        clusterEnd = null;
-      }
-
-      sorted.forEach((event) => {
-        if (!cluster.length) {
-          cluster.push(event);
-          clusterEnd = event.end;
-        } else if (event.start < clusterEnd) {
-          cluster.push(event);
-          if (event.end > clusterEnd) clusterEnd = event.end;
-        } else {
-          flushCluster();
-          cluster.push(event);
-          clusterEnd = event.end;
-        }
-      });
-      flushCluster();
-
-      return results;
-    }
-
-    function eventPositionStyle(entry, hourStart) {
-      const { event, col, cols } = entry;
-      const minutesFromStart = Math.max(0, (event.start.getHours() - hourStart) * 60 + event.start.getMinutes());
-      const duration = event.allDay ? 60 : Math.max(42, (event.end - event.start) / 60000);
-      const top = Math.round(minutesFromStart / 60 * 64 + 6);
-      const height = Math.round(duration / 60 * 64 - 6);
-      let style = `top:${top}px;height:${height}px;`;
-      if (cols > 1) {
-        const gap = 4;
-        const widthPct = 100 / cols;
-        style += `left:calc(${col * widthPct}% + ${gap / 2}px);width:calc(${widthPct}% - ${gap}px);`;
-      }
-      return style;
-    }
-
-    function positionedEventHtml(entry, hourStart) {
-      return listEventHtml(entry.event, `style="${eventPositionStyle(entry, hourStart)}"`);
-    }
-
-    function weekListItemHtml(event) {
-      const member = memberFor(event.assignee);
-      const timeLabel = event.allDay ? '終日' : formatTime(event.start);
-      const fullInfo = `${event.assignee} ${event.allDay ? '終日' : `${formatTime(event.start)}-${formatTime(event.end)}`} ${event.title}`;
-      return `
-        <div class="week-list-item ${member.key}" title="${escapeHtml(fullInfo)}">
-          <div class="week-list-time">${escapeHtml(timeLabel)}</div>
-          <div class="week-list-main">
-            <span class="week-list-name">${escapeHtml(event.assignee)}</span>
-            <span class="week-list-title">${escapeHtml(event.title)}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    function renderMonth() {
-      const days = monthGridDays();
-      monthView.innerHTML = `
-        <div class="month-grid">
-          ${WEEKDAYS.map((day) => `<div class="weekday">${day}</div>`).join('')}
-          ${days.map((day) => monthCellHtml(day)).join('')}
-        </div>
-      `;
-      monthView.querySelectorAll('.date-cell').forEach((cell) => {
-        cell.addEventListener('click', () => {
-          state.cursor = parseDate(cell.dataset.date);
-          state.view = 'day';
-          document.querySelectorAll('.tab').forEach((tab) => tab.classList.toggle('active', tab.dataset.view === 'day'));
-          render();
-          refreshEvents({ silent: true });
-        });
-      });
-    }
-
-    function listEventHtml(event, attrs = '') {
-      const member = memberFor(event.assignee);
-      return `
-        <article class="event ${member.key}" ${attrs}>
-          <div class="who"><span class="dot"></span>${escapeHtml(event.assignee)}　${event.allDay ? '終日' : `${formatTime(event.start)}-${formatTime(event.end)}`}</div>
-          <strong>${escapeHtml(event.title)}</strong>
-          ${event.location ? `<small>${escapeHtml(event.location)}</small>` : ''}
-        </article>
-      `;
-    }
-
-    function monthCellHtml(day) {
-      const events = filteredEvents().filter((event) => eventOccursOnDay(event, day)).sort(sortByStart);
-      const shown = events.slice(0, 2);
-      const outside = day.getMonth() !== state.cursor.getMonth();
-      return `
-        <div class="date-cell${outside ? ' outside' : ''}${isToday(day) ? ' today' : ''}" data-date="${toDateInput(day)}">
-          <div class="date-num">${day.getDate()}</div>
-          ${shown.map((event) => {
-            const member = memberFor(event.assignee);
-            return `<div class="mini-event ${member.key}">${escapeHtml(event.assignee)} ${escapeHtml(event.title)}</div>`;
-          }).join('')}
-          ${events.length > shown.length ? `<div class="more">ほか${events.length - shown.length}件</div>` : ''}
-        </div>
-      `;
-    }
-
-    function moveCursor(direction) {
-      if (state.view === 'day') state.cursor = addDays(state.cursor, direction);
-      if (state.view === 'week') state.cursor = addDays(state.cursor, direction * 7);
-      if (state.view === 'month') state.cursor = new Date(state.cursor.getFullYear(), state.cursor.getMonth() + direction, 1);
-      render();
-    }
-
-    function periodText() {
-      if (state.view === 'day') return `${state.cursor.getFullYear()}年${state.cursor.getMonth() + 1}月${state.cursor.getDate()}日（${WEEKDAYS[state.cursor.getDay()]}）`;
-      if (state.view === 'week') {
-        const start = weekStart(state.cursor);
-        const end = addDays(start, 6);
-        return `${start.getFullYear()}年${start.getMonth() + 1}月${start.getDate()}日-${end.getMonth() + 1}月${end.getDate()}日`;
-      }
-      return `${state.cursor.getFullYear()}年${state.cursor.getMonth() + 1}月`;
-    }
-
-    function saveConfig() {
-      state.config = {
-        scriptUrl: document.getElementById('scriptUrlInput').value.trim(),
-        googleCalendarUrl: state.config.googleCalendarUrl || FILE_CONFIG.googleCalendarUrl || 'https://calendar.google.com/',
-        memberMap: document.getElementById('memberMapInput').value.trim()
-      };
-      localStorage.setItem(CONFIG_KEY, JSON.stringify(state.config));
-      closeModals();
-      setSyncText('設定を保存しました。予定を自動更新します。');
-      refreshEvents({ silent: false });
-    }
-
-    function loadConfig() {
-      try {
-        const saved = JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
-        return {
-          scriptUrl: saved.scriptUrl || FILE_CONFIG.scriptUrl || '',
-          googleCalendarUrl: saved.googleCalendarUrl || FILE_CONFIG.googleCalendarUrl || 'https://calendar.google.com/',
-          memberMap: [FILE_CONFIG.memberMap || '', saved.memberMap || ''].filter(Boolean).join('\n')
-        };
-      } catch {
-        return {
-          scriptUrl: FILE_CONFIG.scriptUrl || '',
-          googleCalendarUrl: FILE_CONFIG.googleCalendarUrl || 'https://calendar.google.com/',
-          memberMap: FILE_CONFIG.memberMap || ''
-        };
-      }
-    }
-
-    function applyConfigToForm() {
-      document.getElementById('scriptUrlInput').value = state.config.scriptUrl || '';
-      document.getElementById('memberMapInput').value = state.config.memberMap || '';
-    }
-
-    function openModal(id) {
-      closeModals();
-      document.getElementById(id).classList.add('open');
-    }
-
-    function closeModals() {
-      document.querySelectorAll('.modal-backdrop').forEach((modal) => modal.classList.remove('open'));
-    }
-
-    function setSyncText(text) { syncState.textContent = text; }
-
-    function visibleRange() {
-      if (state.view === 'day') return { start: startOfDay(state.cursor), end: addDays(startOfDay(state.cursor), 1) };
-      if (state.view === 'week') {
-        const start = weekStart(state.cursor);
-        return { start, end: addDays(start, 7) };
-      }
-      const days = monthGridDays();
-      return { start: days[0], end: addDays(days[days.length - 1], 1) };
-    }
-
-    function monthGridDays() {
-      const first = new Date(state.cursor.getFullYear(), state.cursor.getMonth(), 1);
-      const gridStart = addDays(first, -first.getDay());
-      return Array.from({ length: 42 }, (_, index) => addDays(gridStart, index));
-    }
-
-    function filteredEvents() {
-      if (state.selectedMember === '全員') return state.events;
-      return state.events.filter((event) => event.assignee === state.selectedMember);
-    }
-
-    function assigneeFromEmail(email) {
-      if (!email) return '';
-      return memberEmailMap().get(String(email).trim().toLowerCase()) || '';
-    }
-
-    function memberEmailMap() {
-      const map = new Map();
-      const rows = String(state.config.memberMap || DEFAULT_MEMBER_MAP || '').split(/\r?\n/);
-      rows.forEach((row) => {
-        const trimmed = row.trim();
-        if (!trimmed) return;
-        const parts = trimmed.split(/\s*[=,\t]\s*|\s{2,}/).filter(Boolean);
-        if (parts.length < 2) return;
-        const left = parts[0].trim();
-        const right = parts.slice(1).join(' ').trim();
-        const email = left.includes('@') ? left : right;
-        const name = left.includes('@') ? right : left;
-        if (email.includes('@') && name) map.set(email.toLowerCase(), name);
-      });
-      return map;
-    }
-
-    function memberFor(name) {
-      return MEMBERS.find((member) => member.name === name) || { name, key: 'unknown' };
-    }
-
-    function makeLocalEvent(id, date, startTime, endTime, assignee, title, location) {
-      return { id, assignee, title, location, start: parseDateTime(date, startTime), end: parseDateTime(date, endTime) };
-    }
-
-    function parseDateTime(date, time) {
-      const [year, month, day] = date.split('-').map(Number);
-      const [hour, minute] = time.split(':').map(Number);
-      return new Date(year, month - 1, day, hour, minute);
-    }
-
-    function parseDate(value) {
-      const [year, month, day] = value.split('-').map(Number);
-      return new Date(year, month - 1, day);
-    }
-
-    function addDays(date, amount) {
-      const next = new Date(date);
-      next.setDate(next.getDate() + amount);
-      return next;
-    }
-
-    function startOfDay(date) { return new Date(date.getFullYear(), date.getMonth(), date.getDate()); }
-    function weekStart(date) { return addDays(startOfDay(date), -date.getDay()); }
-    function isSameDate(a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); }
-    function eventOccursOnDay(event, day) {
-      const dayStart = startOfDay(day);
-      const dayEnd = addDays(dayStart, 1);
-      return event.start < dayEnd && event.end > dayStart;
-    }
-    function isToday(date) { return isSameDate(date, new Date()); }
-    function sortByStart(a, b) { return a.start - b.start; }
-    function formatTime(date) { return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`; }
-    function toDateInput(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
-    function escapeHtml(value) {
-      return String(value).replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
-    }
-  </script>
+  // Google誘導ボタンのクリックも記録しておく（任意・軽量）
+  document.getElementById("googleBtn").addEventListener("click", function(){
+    fetch(ENDPOINT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify({ shop: store.name, rating: selectedRating, comment: "", type: "Google誘導" })
+    }).catch(function(){ /* 記録に失敗しても遷移は妨げない */ });
+  });
+</script>
 </body>
 </html>
